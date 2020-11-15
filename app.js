@@ -7,12 +7,14 @@ const cors = require("cors");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
+
+//MODELS
 const Users = require("./models/Users");
+const Entertainment = require("./models/Entertainment");
+
 const admin = require("./seed/admin");
 
-
 require("dotenv/config");
-
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static("client/build"));
@@ -39,14 +41,50 @@ app.use(function (req, res, next) {
   next(createError(404));
 });
 
+// MAKE REQUEST TO API
+const request = require("request");
+
+const todayDate = new Date().toISOString().slice(0, 10);
+
+const options = {
+  url: `https://newsapi.org/v2/everything?q=entertainment&from=${todayDate}&to=${todayDate}&sortBy=relevancy&apiKey=${process.env.NEWS_API_KEY}`,
+  method: "GET",
+  headers: {
+    Accept: "application/json",
+    "Accept-Charset": "utf-8",
+  },
+};
+
+const makeRequest = () =>
+  request(options, async (err, res, body) => {
+    if (err) {
+      console.log(err);
+    }
+    let json = JSON.parse(body);
+    await mongoose.connection.dropCollection("entertainments", async (err) => {
+      if (err) {
+        console.log(err);
+      }
+      await Entertainment.create({ news: json });
+      console.log(`News added to DB - ${todayDate}`);
+    });
+  });
+
+makeRequest();
+// GET NEWS IN DB ONCE PER
+var dayInMilliseconds = 1000 * 60 * 60 * 24;
+setInterval(() => {
+  makeRequest();
+}, dayInMilliseconds);
+
 // CONNECT TO DB
 mongoose.connect(
   process.env.DB_CONNECTION,
   { useNewUrlParser: true, useUnifiedTopology: true },
   async () => {
-    await mongoose.connection.dropCollection('users', async(err, item) => {
-      if(err) {
-        console.log(err)
+    await mongoose.connection.dropCollection("users", async (err) => {
+      if (err) {
+        console.log(err);
       }
       await Users.create(admin);
       console.log("Connected to DB");
