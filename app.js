@@ -12,6 +12,7 @@ const logger = require("morgan");
 const Users = require("./models/Users");
 const Entertainment = require("./models/Entertainment");
 
+//ADMIN CREDENTIALS
 const admin = require("./seed/admin");
 
 require("dotenv/config");
@@ -28,6 +29,7 @@ app.use(cors());
 
 const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
+const entertainmentRouter = require("./routes/entertainment");
 
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -35,6 +37,7 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
 app.use("/api/users", usersRouter);
+app.use("/api/entertainment", entertainmentRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
