@@ -5,12 +5,15 @@ const authenticateUser = require("./middleware/authentication");
 
 /* GET home page. */
 router.get("/", async (req, res, next) => {
-  const find = await Entertainment.find();
-
-  res.json({
-    message: "This is the response to the entertainment route",
-    news: find,
-  });
+  try {
+    const find = await Entertainment.find();
+    res.status(200).json({
+      message: "This is the response to the entertainment route",
+      news: find,
+    });
+  } catch (error) {
+    res.json({ err });
+  }
 });
 
 module.exports = router;
