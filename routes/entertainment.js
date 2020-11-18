@@ -4,7 +4,7 @@ const router = express.Router();
 const authenticateUser = require("./middleware/authentication");
 
 /* GET home page. */
-router.get("/", async (req, res, next) => {
+router.get("/", authenticateUser, async (req, res, next) => {
   try {
     const find = await Entertainment.find();
     res.status(200).json({
